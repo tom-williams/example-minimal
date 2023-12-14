@@ -2,15 +2,20 @@ package org.example.domain;
 
 import io.ebean.Model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class Customer extends Model {
 
   @Id
-  long id;
+  UUID id;
 
   String name;
 
@@ -30,11 +35,34 @@ public class Customer extends Model {
 
   }
 
-  public long getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(long id) {
+  @OneToMany(cascade = CascadeType.ALL)
+  public List<Order> orders;
+
+  public List<Order> getOrders() {
+    if (orders == null) {
+      orders = new ArrayList<>();
+    }
+    return orders;
+  }
+
+  public void setOrders(List<Order> orders) {
+    this.orders = orders;
+  }
+
+  public void addOrder(Order order) {
+    order.setCustomer(this);
+    getOrders().add(order);
+  }
+
+  public void removeOrder(Order order) {
+    order.setCustomer(null);
+    getOrders().remove(order);
+  }
+  public void setId(UUID id) {
     this.id = id;
   }
 

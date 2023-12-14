@@ -13,7 +13,7 @@ class CustomerQueryTest {
         .findList();
 
     new QCustomer()
-      .id.greaterOrEqualTo(1L)
+      .id.isNotNull()
       .findList();
   }
 }

@@ -4,6 +4,9 @@ import io.ebean.DB;
 import io.ebean.Database;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -26,7 +29,7 @@ class CustomerTest {
     Database server = DB.getDefault();
     server.save(rob);
 
-    assertThat(rob.getId()).isGreaterThan(0);
+    assertThat(rob.getId()).isNotNull();
   }
 
   /**
@@ -38,7 +41,7 @@ class CustomerTest {
     Customer jim = new Customer("Jim");
     jim.save();
 
-    assertThat(jim.getId()).isGreaterThan(0);
+    assertThat(jim.getId()).isNotNull();
   }
 
 
@@ -75,4 +78,25 @@ class CustomerTest {
     upd.update();
   }
 
+  @Test
+  void duplicateKeyTransitiveStatelessUpdate() {
+    Customer tom = new Customer("Tom");
+    Order order1 = new Order();
+
+    tom.addOrder(order1);
+
+    tom.save();
+
+    UUID order1Id = order1.getId();
+
+    // Simulate a Customer object having been deserialized by the API,
+    // and calling the setOrders for a Customer object that has already been persisted, but needs to be updated
+    // Customer object:
+    // { "name": "Tom", "id": "8986e2b8-abd5-41ad-93a6-9e48d486b132", "orders": ["id": "4b14b111-a0ce-4d1e-badd-1de9ae7889f3"] }
+    Order order1NotLoaded = new Order();
+    order1NotLoaded.setId(order1Id);
+    tom.setOrders(List.of(order1NotLoaded));
+
+    tom.update();
+  }
 }
